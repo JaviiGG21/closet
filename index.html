@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulador de Base de Datos</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        input, button { margin: 5px 0; padding: 5px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    </style>
+</head>
+<body>
+    <h1>Simulador de Base de Datos</h1>
+    <label>Nombre:</label><br>
+    <input type="text" id="nombre"><br>
+    <label>Edad:</label><br>
+    <input type="number" id="edad"><br>
+
+    <button onclick="agregarRegistro()">Agregar</button>
+
+    <!-- NUEVO: Sección para buscar y eliminar registros -->
+    <h2>Búsqueda y Eliminación</h2> <!-- NUEVO -->
+    <label>Buscar/Eliminar por Nombre:</label><br> <!-- NUEVO -->
+    <input type="text" id="buscarNombre"><br> <!-- NUEVO -->
+    <button onclick="buscarRegistro()">Buscar</button> <!-- NUEVO -->
+    <button onclick="mostrarRegistros()">Mostrar Todos</button> <!-- NUEVO -->
+    <button onclick="eliminarRegistro()">Eliminar</button> <!-- NUEVO -->
+    <button onclick="editarRegistro()">Editar</button>
+
+    <h2>Registros</h2>
+    <table id="tabla">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Edad</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="cuerpoTabla">
+        </tbody>
+    </table>
+    <script>
+        let indiceEditar = -1; 
+        function obtenerRegistros() {
+            return JSON.parse(localStorage.getItem('registros')) || [];
+        }
+        function guardarRegistros(registros) {
+            localStorage.setItem('registros', JSON.stringify(registros));
+        }
+        function agregarRegistro() {
+            const nombre = document.getElementById('nombre').value.trim(); // MODIFICADO: Se añadió trim() // NUEVO
+            const edad = document.getElementById('edad').value.trim();     // MODIFICADO: Se añadió trim() // NUEVO
+            if (nombre && edad) {
+                const registros = obtenerRegistros();
+                registros.push({ nombre, edad });
+                guardarRegistros(registros);
+                mostrarRegistros();
+                document.getElementById('nombre').value = '';
+                document.getElementById('edad').value = '';
+            }
+        }
+
+        // MODIFICADO: Ahora acepta registros filtrados para mostrar solo coincidencias // NUEVO
+        function mostrarRegistros(filtrados = null) {
+            const registros = filtrados || obtenerRegistros();
+            const cuerpo = document.getElementById('cuerpoTabla');
+            cuerpo.innerHTML = '';
+            registros.forEach(reg => {
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                <td>${reg.nombre}</td>
+                <td>${reg.edad}</td>
+                <td><button onclick="prepararEdicion(${index})">Editar</button></td> <!-- NUEVO: Botón en la tabla -->
+                `;
+                cuerpo.appendChild(fila);
+            });
+        }
+        // NUEVO: Función para buscar coincidencias y mostrar solo las que coinciden
+        function buscarRegistro() {
+            const nombre = document.getElementById('buscarNombre').value.trim().toLowerCase(); // NUEVO
+            if (nombre) {
+                const registros = obtenerRegistros(); // NUEVO
+                const coincidencias = registros.filter(reg => reg.nombre.toLowerCase().includes(nombre)); // NUEVO
+                mostrarRegistros(coincidencias); // NUEVO
+                if (coincidencias.length === 0) { // NUEVO
+                    alert('No se encontraron coincidencias.'); // NUEVO
+                }
+            }
+        }
+        // NUEVO: Función para eliminar un registro con confirmación
+        function eliminarRegistro() {
+            const nombre = document.getElementById('buscarNombre').value.trim(); // NUEVO
+            if (!nombre) return alert('Por favor, ingresa un nombre a eliminar.'); // NUEVO
+            let registros = obtenerRegistros(); // NUEVO
+            const index = registros.findIndex(reg => reg.nombre.toLowerCase() === nombre.toLowerCase()); // NUEVO
+            if (index !== -1) { // NUEVO
+                const confirmar = confirm(`¿Estás seguro de que deseas eliminar el registro de "${registros[index].nombre}"?`); // NUEVO
+                if (confirmar) { // NUEVO
+                    registros.splice(index, 1); // NUEVO
+                    guardarRegistros(registros); // NUEVO
+                    mostrarRegistros(); // NUEVO
+                    alert('Registro eliminado.'); // NUEVO
+                }
+            } else {
+                alert('Registro no encontrado.'); // NUEVO
+            }
+        }
+
+        function prepararEdicion(index) {
+            const registros = obtenerRegistros();
+            const reg = registros[index];
+            document.getElementById('nombre').value = reg.nombre;
+            document.getElementById('edad').value = reg.edad;
+            indiceEditar = index;
+        }
+
+        function editarRegistro() {
+            if (indiceEditar === -1) {
+                alert("Selecciona un registro desde la tabla usando el botón 'Editar'.");
+                return;
+            }
+            const nombre = document.getElementById('nombre').value.trim();
+            const edad = document.getElementById('edad').value.trim();
+            if (nombre && edad) {
+                const registros = obtenerRegistros();
+                registros[indiceEditar] = { nombre, edad };
+                guardarRegistros(registros);
+                mostrarRegistros();
+                document.getElementById('nombre').value = '';
+                document.getElementById('edad').value = '';
+                indiceEditar = -1;
+                alert("Registro actualizado correctamente.");
+            }
+        }
+
+        window.onload = mostrarRegistros;
+    </script>
+</body>
+</html>
