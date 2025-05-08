@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Switch & Keep - Fashion App</title>
+    <style>
+        :root {
+            --color-primary: #7b2cbf;
+            --color-secondary: #9d4edd;
+            --color-accent: #c77dff;
+            --color-light: #e0b1ff;
+            --color-bg: #f3e8ff;
+            --color-dark: #3a0ca3;
+            --shadow: 0 4px 6px rgba(123, 44, 191, 0.2);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--color-bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Splash Screen */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-dark));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        
+        .splash-container {
+            text-align: center;
+            color: white;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: fadeIn 1s ease forwards 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Asegura que todos los elementos hijos se centren */
+            width: 100%; /* Ocupa todo el ancho disponible */
+        }
+        
+        .splash-logo {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #ffffff, var(--color-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 15px rgba(255, 255, 255, 0.3);
+        }
+        
+        .splash-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .splash-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+        
+        .splash-loading {
+            margin-top: 2rem auto 0;
+            position: relative;
+            width: 200px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .splash-loading-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            background: white;
+            border-radius: 10px;
+            animation: loading 2.5s ease-in-out forwards;
+        }
+        
+        .splash-enter-btn {
+            margin-top: 2rem;
+            padding: 0.8rem 2.5rem;
+            background-color: white;
+            color: var(--color-primary);
+            border: none;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.5s ease forwards 2.8s;
+        }
+        
+        .splash-enter-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+        }
+        
+        .splash-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.4;
+            animation-name: float;
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite;
+            background-color: white;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-20px) translateX(10px); }
+            100% { transform: translateY(0) translateX(0); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes loading {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            80% { width: 90%; }
+            100% { width: 100%; }
+        }
+        
+        .app-container {
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-dark));
+            color: white;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+        
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            padding-bottom: 2rem;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            padding: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                grid-template-columns: 300px 1fr;
+                gap: 2rem;
+                padding: 2rem;
+            }
+        }
+        
+        .panel {
+            background-color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+        
+        .panel h2 {
+            color: var(--color-primary);
+            margin-bottom: 1rem;
+            font-size: 1.4rem;
+            border-bottom: 2px solid var(--color-light);
+            padding-bottom: 0.5rem;
+        }
+
+        .upload-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--color-accent);
+            border-radius: 8px;
+            padding: 2rem 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: rgba(231, 213, 255, 0.5);
+        }
+        
+        .upload-area:hover {
+            background-color: rgba(231, 213, 255, 0.8);
+            border-color: var(--color-primary);
+        }
+        
+        .upload-icon {
+            font-size: 2.5rem;
+            color: var(--color-secondary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .btn {
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+            margin: 0.5rem;
+        }
+        
+        .btn:hover {
+            background-color: var(--color-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        
+        .btn-secondary {
+            background-color: var(--color-secondary);
+        }
+        
+        #fileInput {
+            display: none;
+        }
+
+        .categories-container {
+            margin-bottom: 2rem;
+        }
+        
+        .category-list {
+            list-style: none;
+            margin-bottom: 1rem;
+        }
+        
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.7rem;
+            margin-bottom: 0.5rem;
+            background-color: rgba(231, 213, 255, 0.3);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .category-item:hover {
+            background-color: rgba(231, 213, 255, 0.6);
+        }
+        
+        .category-item.active {
+            background-color: var(--color-light);
+            border-left: 4px solid var(--color-primary);
+        }
+        
+        .category-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-small {
+            padding: 0.3rem 0.7rem;
+            font-size: 0.8rem;
+        }
+        
+        .new-category-form {
+            display: flex;
+            margin-top: 1rem;
+        }
+        
+        .form-input {
+            flex: 1;
+            padding: 0.7rem;
+            border: 2px solid var(--color-light);
+            border-radius: 8px 0 0 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .form-input:focus {
+            border-color: var(--color-accent);
+        }
+        
+        .btn-add {
+            border-radius: 0 8px 8px 0;
+            margin: 0;
+        }
+        
+        .photos-container {
+            margin-bottom: 2rem;
+        }
+        
+        .photos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .photo-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+            aspect-ratio: 1/1;
+        }
+        
+        .photo-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .photo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .photo-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(123, 44, 191, 0.7);
+            color: white;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .photo-item:hover .photo-overlay {
+            opacity: 1;
+        }
+        
+        .collage-container {
+            position: relative;
+        }
+        
+        .collage-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .collage-result {
+            min-height: 400px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            background-color: rgba(231, 213, 255, 0.3);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #collageCanvas {
+            max-width: 100%;
+            max-height: 600px;
+            border-radius: 12px;
+            display: none;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--color-secondary);
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+        
+        .loader {
+            display: none;
+            width: 48px;
+            height: 48px;
+            border: 5px solid var(--color-light);
+            border-bottom-color: var(--color-primary);
+            border-radius: 50%;
+            animation: rotation 1s linear infinite;
+        }
+        
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--color-primary);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        footer {
+            background-color: white;
+            color: var(--color-primary);
+            position: relative;
+            width: 100%;
+            bottom: 0;
+            text-align: center;
+            padding: 1rem;
+            margin-top: auto;
+            font-size: 0.9rem;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+
+        .category-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    max-width: 500px;
+}
+
+.category-checkbox {
+    display: flex;
+    align-items: center;
+    background-color: rgba(231, 213, 255, 0.3);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.category-checkbox input {
+    margin-right: 0.5rem;
+    cursor: pointer;
+}
+
+.category-checkbox:hover {
+    background-color: rgba(231, 213, 255, 0.6);
+}
+
+.category-checkbox.checked {
+    background-color: var(--color-light);
+    border: 2px solid var(--color-primary);
+}
+
+@media (max-width: 768px) {
+    /* Header responsive */
+    header h1 {
+        font-size: 1.8rem!important;
+    }
+    
+    header p {
+        font-size: 0.9rem;
+    }
+
+    /* Contenedor principal */
+    .container {
+        grid-template-columns: 1fr!important;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        order: -1;
+    }
+
+    /* Paneles */
+    .panel {
+        padding: 1rem;
+    }
+
+    /* Botones */
+    .btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+
+    /* Grid de fotos */
+    .photos-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+
+    /* Checkboxes de categorías */
+    .category-checkboxes {
+        gap: 0.5rem;
+    }
+    
+    .category-checkbox {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    /* Footer */
+    footer {
+        padding: 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    /* Canvas del collage */
+    #collageCanvas {
+        max-height: 50vh;
+    }
+}
+
+.form-input, #categorySelect {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 0.9rem;
+}
+
+.photo-img {
+    max-width: 100%;
+    height: auto;
+}
+
+@media (max-width: 480px) {
+    /* Ajustes adicionales para móviles pequeños */
+    .splash-logo {
+        font-size: 3.5rem!important;
+    }
+    
+    .splash-title {
+        font-size: 2.2rem!important;
+        letter-spacing: 1px;
+    }
+
+    .splash-subtitle {
+        font-size: 1rem;
+    }
+    
+    .splash-enter-btn {
+        padding: 0.6rem 1.5rem;
+        font-size: 1rem;
+    }
+
+    .collage-controls {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .collage-buttons {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .upload-area {
+        padding: 1rem;
+    }
+
+    .new-category-form {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .form-input {
+        border-radius: 8px!important;
+    }
+    
+    .btn-add {
+        border-radius: 8px!important;
+    }
+
+    /* Footer más compacto */
+    footer p {
+        margin: 0.2rem 0;
+    }
+}
+
+    </style>
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div class="splash-screen" id="splashScreen">
+        <div class="splash-particles" id="particles"></div>
+        <div class="splash-container">
+            <div class="splash-logo">👖✨👕</div>
+            <h1 class="splash-title">Switch & Keep </h1>
+            <p class="splash-subtitle">Fashion App</p>
+            <div class="splash-loading">
+                <div class="splash-loading-bar"></div>
+            </div>
+            <button class="splash-enter-btn" id="enterAppBtn">Entrar</button>
+        </div>
+    </div>
+
+    <!-- Aplicación Principal -->
+    <div class="app-container" id="appContainer">
+        <header>
+            <h1>Switch & Keep</h1>
+            <p>Organiza tu ropa y crea outfits únicos</p>
+        </header>
+        
+        <main>
+            <div class="container">
+                <div class="sidebar">
+                    <div class="panel">
+                        <h2>Categorías</h2>
+                        <div class="categories-container">
+                            <ul class="category-list" id="categoryList">
+                                <!-- Las categorías se añadirán dinámicamente aquí -->
+                            </ul>
+                            <div class="new-category-form">
+                                <input type="text" class="form-input" id="newCategoryInput" placeholder="Nueva categoría...">
+                                <button class="btn btn-add" id="addCategoryBtn">Añadir</button>
+                            </div>
+                        </div>
+                    </div>
+                
+                <div class="panel upload-container">
+                    <h2>Subir Fotos</h2>
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📷</div>
+                        <p>Arrastra fotos aquí o haz clic para seleccionar</p>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/*" multiple>
+                    <select id="categorySelect" class="form-input">
+                        <option value="">Selecciona una categoría</option>
+                        <!-- Las opciones se añadirán dinámicamente -->
+                    </select>
+                    <button class="btn" id="uploadBtn">Subir Ropa</button>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="panel photos-container">
+                    <h2>Ropa por Categoría</h2>
+                    <p id="currentCategoryDisplay">Selecciona una categoría para ver la ropa disponible</p>
+                    
+                    <div class="photos-grid" id="photosGrid">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🖼️</div>
+                            <p>No hay ropa en esta categoría</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel collage-container">
+                    <h2>Closet Virtual</h2>
+                    <div class="collage-controls">
+                        <div class="category-checkboxes" id="collageCategories">
+                            <!-- Las categorías se añadirán dinámicamente aquí -->
+                        </div>
+                        <div>
+                            <button class="btn" id="generateCollageBtn">Generar Outfit</button>
+                            <button class="btn btn-secondary" id="downloadCollageBtn">Descargar</button>
+                        </div>
+                    </div>
+
+                    
+                    <div id="collageResultado" class="panel" style="margin-top: 20px;">
+                        <h2>Outfits 👕</h2>
+                        <div id="collage" style="display: flex; flex-wrap: wrap; gap: 1rem;"></div>
+                    </div>
+                    
+                    <div class="collage-result" id="collageResult">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">✨</div>
+                            <p>Genera tu Outfit para verlo aquí</p>
+                        </div>
+                        <div class="loader" id="collageLoader"></div>
+                        <canvas id="collageCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    </div>
+    
+    <div class="notification" id="notification">Mensaje de notificación</div>
+    
+    <footer>
+        <p>Switch & Keep - Fashion App</p>
+    </footer>
+    
+    <script>
+        // Estado global de la aplicación
+        const appState = {
+            categories: [],
+            photos: {},
+            currentCategory: null
+        };
+
+        // Elementos DOM
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const categoryList = document.getElementById('categoryList');
+        const newCategoryInput = document.getElementById('newCategoryInput');
+        const addCategoryBtn = document.getElementById('addCategoryBtn');
+        const categorySelect = document.getElementById('categorySelect');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const photosGrid = document.getElementById('photosGrid');
+        const currentCategoryDisplay = document.getElementById('currentCategoryDisplay');
+        const collageCategory = document.getElementById('collageCategory');
+        const generateCollageBtn = document.getElementById('generateCollageBtn');
+        const downloadCollageBtn = document.getElementById('downloadCollageBtn');
+        const collageCanvas = document.getElementById('collageCanvas');
+        const collageResult = document.getElementById('collageResult');
+        const collageLoader = document.getElementById('collageLoader');
+        const notification = document.getElementById('notification');
+        
+        // Inicialización
+        setupSplashScreen();
+        
+        function setupSplashScreen() {
+            // Crear partículas para el fondo del splash screen
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Tamaño aleatorio
+                const size = Math.random() * 15 + 5;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Posición aleatoria
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                // Animación con duración y retraso aleatorio
+                const duration = Math.random() * 10 + 10;
+                const delay = Math.random() * 5;
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `${delay}s`;
+                
+                particlesContainer.appendChild(particle);
+            }
+            
+            // Evento para botón de entrada
+            document.getElementById('enterAppBtn').addEventListener('click', startApp);
+        }
+        
+        function startApp() {
+            // Ocultar splash screen
+            const splashScreen = document.getElementById('splashScreen');
+            splashScreen.style.opacity = '0';
+            splashScreen.style.transform = 'scale(1.1)';
+            
+            // Mostrar app
+            const appContainer = document.getElementById('appContainer');
+            appContainer.style.opacity = '1';
+            
+            // Eliminar splash screen después de la animación
+            setTimeout(() => {
+                splashScreen.style.display = 'none';
+            }, 1000);
+            
+            // Iniciar la aplicación
+            initApp();
+        }
+        
+        function initApp() {
+            // Cargar datos del almacenamiento local si existen
+            loadFromLocalStorage();
+            
+            // Eventos de la interfaz
+            setupEventListeners();
+            
+            // Renderizar UI inicial
+            renderCategories();
+            updateCategorySelects();
+        }
+        
+        function setupEventListeners() {
+            // Eventos de subida de archivos
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', e => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--color-primary)';
+            });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = 'var(--color-accent)';
+            });
+            uploadArea.addEventListener('drop', e => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--color-accent)';
+                if (e.dataTransfer.files.length > 0) {
+                    fileInput.files = e.dataTransfer.files;
+                }
+            });
+            
+            // Eventos de categorías
+            addCategoryBtn.addEventListener('click', addCategory);
+            newCategoryInput.addEventListener('keypress', e => {
+                if (e.key === 'Enter') addCategory();
+            });
+            
+            // Eventos de subida
+            uploadBtn.addEventListener('click', uploadPhotos);
+            
+            // Eventos de collage
+            generateCollageBtn.addEventListener('click', generateCollage);
+            downloadCollageBtn.addEventListener('click', downloadCollage);
+
+            document.body.addEventListener('change', function(e) {
+             if (e.target.matches('#collageCategories input[type="checkbox"]')) {
+                  e.target.parentElement.classList.toggle('checked', e.target.checked);
+              }
+             });
+        }
+        
+        function loadFromLocalStorage() {
+            const savedCategories = localStorage.getItem('collageAppCategories');
+            const savedPhotos = localStorage.getItem('collageAppPhotos');
+            
+            if (savedCategories) {
+                appState.categories = JSON.parse(savedCategories);
+            }
+            
+            if (savedPhotos) {
+                appState.photos = JSON.parse(savedPhotos);
+                
+                // Cargar imágenes desde base64
+                for (const category in appState.photos) {
+                    appState.photos[category] = appState.photos[category].map(photo => {
+                        return {
+                            ...photo,
+                            img: new Image()
+                        };
+                    });
+                    
+                    appState.photos[category].forEach((photo, index) => {
+                        photo.img.src = photo.src;
+                    });
+                }
+            }
+        }
+        
+        function saveToLocalStorage() {
+            // Guardar categorías
+            localStorage.setItem('collageAppCategories', JSON.stringify(appState.categories));
+            
+            // Guardar fotos (convertir a formato serializable)
+            const serializablePhotos = {};
+            for (const category in appState.photos) {
+                serializablePhotos[category] = appState.photos[category].map(photo => {
+                    return {
+                        name: photo.name,
+                        src: photo.src
+                    };
+                });
+            }
+            
+            localStorage.setItem('collageAppPhotos', JSON.stringify(serializablePhotos));
+        }
+        
+        function addCategory() {
+            const categoryName = newCategoryInput.value.trim();
+            
+            if (categoryName === '') {
+                showNotification('Por favor, introduce un nombre para la categoría');
+                return;
+            }
+            
+            if (appState.categories.includes(categoryName)) {
+                showNotification('Esta categoría ya existe');
+                return;
+            }
+            
+            appState.categories.push(categoryName);
+            appState.photos[categoryName] = [];
+            
+            newCategoryInput.value = '';
+            renderCategories();
+            updateCategorySelects();
+            saveToLocalStorage();
+            
+            showNotification(`Categoría "${categoryName}" creada correctamente`);
+        }
+        
+        function deleteCategory(categoryName) {
+            if (confirm(`¿Estás seguro de que quieres eliminar la categoría "${categoryName}" y todas sus fotos?`)) {
+                appState.categories = appState.categories.filter(cat => cat !== categoryName);
+                delete appState.photos[categoryName];
+                
+                if (appState.currentCategory === categoryName) {
+                    appState.currentCategory = null;
+                }
+                
+                renderCategories();
+                updateCategorySelects();
+                displayCurrentCategoryPhotos();
+                saveToLocalStorage();
+                
+                showNotification(`Categoría "${categoryName}" eliminada`);
+            }
+        }
+        
+        function selectCategory(categoryName) {
+            appState.currentCategory = categoryName;
+            
+            // Actualizar UI
+            document.querySelectorAll('.category-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            const selectedItem = document.querySelector(`[data-category="${categoryName}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('active');
+            }
+            
+            displayCurrentCategoryPhotos();
+        }
+        
+        function renderCategories() {
+            categoryList.innerHTML = '';
+            
+            if (appState.categories.length === 0) {
+                categoryList.innerHTML = `
+                    <div class="empty-state">
+                        <p>No hay categorías</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            appState.categories.forEach(category => {
+                const li = document.createElement('li');
+                li.className = `category-item ${appState.currentCategory === category ? 'active' : ''}`;
+                li.setAttribute('data-category', category);
+                li.innerHTML = `
+                    <span>${category}</span>
+                    <div class="category-controls">
+                        <button class="btn btn-small btn-secondary view-btn">Ver</button>
+                        <button class="btn btn-small delete-btn">🗑️</button>
+                    </div>
+                `;
+                
+                // Eventos
+                li.querySelector('.view-btn').addEventListener('click', () => selectCategory(category));
+                li.querySelector('.delete-btn').addEventListener('click', () => deleteCategory(category));
+                
+                categoryList.appendChild(li);
+            });
+        }
+        
+        function updateCategorySelects() {
+            const checkboxesContainer = document.getElementById('collageCategories');
+            checkboxesContainer.innerHTML = '';
+    
+            appState.categories.forEach(category => {
+                const label = document.createElement('label');
+                label.className = 'category-checkbox';
+                label.innerHTML = `
+                    <input type="checkbox" value="${category}">
+                    ${category}
+                 `;
+                 checkboxesContainer.appendChild(label);
+                 });
+        }
+        
+        function uploadPhotos() {
+            const files = fileInput.files;
+            const category = categorySelect.value;
+            
+            if (!category) {
+                showNotification('Por favor, selecciona una categoría');
+                return;
+            }
+            
+            if (files.length === 0) {
+                showNotification('Por favor, selecciona al menos una foto');
+                return;
+            }
+            
+            // Procesar cada archivo
+            const totalFiles = files.length;
+            let processedFiles = 0;
+            
+            Array.from(files).forEach(file => {
+                if (!file.type.startsWith('image/')) {
+                    processedFiles++;
+                    checkCompletion();
+                    return;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    
+                    img.onload = () => {
+                        // Añadir a la categoría
+                        if (!appState.photos[category]) {
+                            appState.photos[category] = [];
+                        }
+                        
+                        appState.photos[category].push({
+                            name: file.name,
+                            src: e.target.result,
+                            img: img
+                        });
+                        
+                        processedFiles++;
+                        checkCompletion();
+                    };
+                };
+                
+                reader.readAsDataURL(file);
+            });
+            
+            function checkCompletion() {
+                if (processedFiles === totalFiles) {
+                    // Limpiar el input
+                    fileInput.value = '';
+                    
+                    // Si la categoría actual es la misma que la de subida, actualizamos la vista
+                    if (appState.currentCategory === category) {
+                        displayCurrentCategoryPhotos();
+                    }
+                    
+                    saveToLocalStorage();
+                    showNotification(`${totalFiles} fotos subidas a la categoría "${category}"`);
+                }
+            }
+        }
+        
+        function displayCurrentCategoryPhotos() {
+            const category = appState.currentCategory;
+            
+            // Actualizar título
+            if (category) {
+                currentCategoryDisplay.textContent = `Categoría: ${category}`;
+            } else {
+                currentCategoryDisplay.textContent = 'Selecciona una categoría para ver sus fotos';
+            }
+            
+            // Mostrar fotos
+            if (!category || !appState.photos[category] || appState.photos[category].length === 0) {
+                photosGrid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🖼️</div>
+                        <p>No hay fotos en esta categoría</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            photosGrid.innerHTML = '';
+            
+            appState.photos[category].forEach((photo, index) => {
+                const photoDiv = document.createElement('div');
+                photoDiv.className = 'photo-item';
+                photoDiv.innerHTML = `
+                    <img src="${photo.src}" alt="${photo.name}" class="photo-img">
+                    <div class="photo-overlay">
+                        <p title="${photo.name}">${truncateText(photo.name, 15)}</p>
+                        <button class="btn btn-small delete-photo" data-index="${index}">Eliminar</button>
+                    </div>
+                `;
+                
+                photoDiv.querySelector('.delete-photo').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deletePhoto(category, index);
+                });
+                
+                photosGrid.appendChild(photoDiv);
+            });
+        }
+        
+        function deletePhoto(category, index) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta foto?')) {
+                appState.photos[category].splice(index, 1);
+                displayCurrentCategoryPhotos();
+                saveToLocalStorage();
+                showNotification('Foto eliminada correctamente');
+            }
+        }
+        
+        function generateCollage() {
+    const checkboxes = document.querySelectorAll('#collageCategories input[type="checkbox"]:checked');
+    const selectedCategories = Array.from(checkboxes).map(cb => cb.value);
+    
+    if (selectedCategories.length === 0) {
+        showNotification('Selecciona al menos una categoría');
+        return;
+    }
+    
+    // Verificar que todas las categorías tengan fotos
+    const emptyCategories = selectedCategories.filter(cat => 
+        !appState.photos[cat] || appState.photos[cat].length === 0
+    );
+    
+    if (emptyCategories.length > 0) {
+        showNotification(`Estas categorías están vacías: ${emptyCategories.join(', ')}`);
+        return;
+    }
+    
+    collageLoader.style.display = 'block';
+    document.querySelector('#collageResult .empty-state')?.remove(); // Eliminar mensaje inicial
+    
+    setTimeout(() => {
+        createCollage(selectedCategories);
+    }, 100);
+}
+
+// Modificar la función createCollage
+function createCollage(selectedCategories) {
+    const canvas = collageCanvas;
+    const ctx = canvas.getContext('2d');
+    const numCategories = selectedCategories.length;
+    
+    // Dimensiones del canvas
+    const width = 1200;
+    const height = 800;
+    canvas.width = width;
+    canvas.height = height;
+    
+    // Limpiar canvas
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, width, height);
+    
+    // Obtener una foto aleatoria por categoría
+    const photos = selectedCategories.map(category => {
+        const categoryPhotos = appState.photos[category];
+        return categoryPhotos[Math.floor(Math.random() * categoryPhotos.length)];
+    });
+    
+    // Calcular layout más eficiente
+    const maxColumns = 4; // Máximo de columnas
+    const cols = Math.min(numCategories, maxColumns);
+    const rows = Math.ceil(numCategories / cols);
+    
+    const cellWidth = width / cols;
+    const cellHeight = height / rows;
+    
+    // Ajustes de espaciado
+    const margin = 20; // Aumentar margen
+    const padding = 15; // Espacio interno
+    
+    photos.forEach((photo, index) => {
+        const row = Math.floor(index / cols);
+        const col = index % cols;
+        
+        // Calcular posición con márgenes
+        const x = col * cellWidth + margin;
+        const y = row * cellHeight + margin;
+        const availableWidth = cellWidth - margin * 2;
+        const availableHeight = cellHeight - margin * 2;
+        
+        // Reducir tamaño de dibujo (85% del espacio disponible)
+        const maxWidth = availableWidth * 0.85;
+        const maxHeight = availableHeight * 0.85;
+        
+        // Mantener relación de aspecto
+        const imgRatio = photo.img.width / photo.img.height;
+        const slotRatio = maxWidth / maxHeight;
+        
+        let drawWidth, drawHeight;
+        if (imgRatio > slotRatio) {
+            drawWidth = maxWidth;
+            drawHeight = drawWidth / imgRatio;
+        } else {
+            drawHeight = maxHeight;
+            drawWidth = drawHeight * imgRatio;
+        }
+        
+        // Centrar la imagen
+        const dx = x + (availableWidth - drawWidth) / 2;
+        const dy = y + (availableHeight - drawHeight) / 2;
+        
+        // Dibujar imagen
+        ctx.drawImage(photo.img, dx, dy, drawWidth, drawHeight);
+        
+        // Dibujar fondo para etiqueta
+        ctx.fillStyle = 'rgba(123, 44, 191, 0.8)';
+        const labelWidth = ctx.measureText(selectedCategories[index]).width + 20;
+        ctx.fillRect(dx + 10, dy + drawHeight - 40, labelWidth, 30);
+        
+        // Dibujar texto de categoría
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 14px Segoe UI';
+        ctx.fillText(selectedCategories[index], dx + 15, dy + drawHeight - 20);
+    });
+    
+    // Ocultar mensaje inicial
+    document.querySelector('#collageResult .empty-state')?.remove();
+    collageCanvas.style.display = 'block';
+    collageLoader.style.display = 'none';
+    downloadCollageBtn.disabled = false;
+}
+        
+        function downloadCollage() {
+            if (collageCanvas.style.display !== 'block') {
+                showNotification('Primero debes generar un collage');
+                return;
+            }
+            
+            const link = document.createElement('a');
+            link.download = `collage-${collageCategory.value}-${new Date().getTime()}.png`;
+            link.href = collageCanvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        function truncateText(text, maxLength) {
+            if (text.length <= maxLength) return text;
+            return text.substring(0, maxLength - 3) + '...';
+        }
+    </script>
+</body>
+</html>
